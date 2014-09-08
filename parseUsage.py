@@ -31,8 +31,8 @@ def parse_headers(header_rows):
 
 def get_usage_data(url):
     """Get all the usage data from the table with id='chtc_usage_by_user' from url"""
-    table = get_table('usage.html','chtc_usage_by_user')
-    rows = table.getchildren()[0].getchildren()  # skip over 'tbody' element in tree
+    table = get_table(url,'chtc_usage_by_user')
+    rows = table.getchildren()  
     
     from_date,to_date,pools = parse_headers(rows[0:3])
     
@@ -76,6 +76,12 @@ date,alldata = get_usage_data('http://monitor.chtc.wisc.edu/uw_condor_usage/usag
 
 conn = sqlite3.connect('chtc_usage.db')
 curs = conn.cursor()
+
+# check for data on this date already and don't add again
+curs.execute('SELECT * FROM usage WHERE enddate=?',(date,))
+if curs.fetchone():
+    print("This date " + str(date) + " has already been added.")
+    quit()
 
 # get all compute pools already in db    
 db_pools = get_db_pools(curs)
