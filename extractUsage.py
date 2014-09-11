@@ -22,7 +22,7 @@ args=parser.parse_args()
 
 
 ### projects
-usage_projects=cut.get_db_projects(curs)
+usage_projects=set(cut.get_db_projects(curs))
 print usage_projects
 if args.project:
     usage_projects=set(args.project).intersection(usage_projects)
