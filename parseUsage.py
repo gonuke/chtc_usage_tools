@@ -22,7 +22,10 @@ def get_html_from_msg(msg):
 def get_table(html_tree,table_id):
     # get the first element with id=table_id from anywhere in the doctree
     # assumes only one and that it's a table
-    return html_tree.xpath('//*[@id="' + table_id + '"]')[0]
+    table = html_tree.xpath('//*[@id="' + table_id + '"]/tbody')
+    if len(table) == 0:
+        table = html_tree.xpath('//*[@id="' + table_id + '"]')
+    return table[0]
 
 def parse_date(date_string):
     date = map(int,date_string.split('-'))
@@ -54,8 +57,7 @@ def extract_usage_data(source,source_type):
         html_start = msg_html.find('<html>')
         html_tree = lxml.html.fromstring(msg_html[html_start:])
 
-    table = get_table(html_tree,'chtc_usage_by_user')
-    rows = table.getchildren()  
+    rows = get_table(html_tree,'chtc_usage_by_user')
     
     from_date,to_date,pools = parse_headers(rows[0:3])
     
@@ -79,17 +81,22 @@ def date_exists(curs,date):
 
 def get_all_usage_data(sourceURI):
     
-    html_schemes = ['http','ftp','file']
+    remote_html_schemes = ['http','ftp']
 
     usage_data = {}
     source = urlparse.urlparse(sourceURI)
+
     if source.scheme == 'mbox':
         print "Adding usage data from mbox file " + source.path
         for msg in mailbox.mbox(source.path):
             date, alldata = extract_usage_data(msg,source.scheme)
             usage_data[date] = alldata
-    elif source.scheme in html_schemes:
-        print "Adding usage data from HTML file " + sourceURI
+    elif source.scheme == 'file':
+        print "Adding usage data from local HTML file " + source.path
+        date,alldata = extract_usage_data(source.path,'html_file')
+        usage_data[date] = alldata
+    elif source.scheme in remote_html_schemes:
+        print "Adding usage data from remote HTML file " + sourceURI
         date,alldata = extract_usage_data(sourceURI,'html_file')
         usage_data[date] = alldata
     else:
