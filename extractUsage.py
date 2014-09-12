@@ -10,15 +10,16 @@ import matplotlib as mpl
 
 mpl.rcParams['axes.color_cycle'] = ['r', 'k', 'c']
 
-conn = cut.usage_db_connect()
-curs = conn.cursor()
-
 parser = argparse.ArgumentParser(description='A tool to extract usage data')
 parser.add_argument('--project',help='The name of a project over which to summarize the results',nargs="*",type=lambda s: unicode(s,'utf8'))
 parser.add_argument('--pool',help='Limit the data to a single pool',nargs="*")
 parser.add_argument('-s','--sum',help="Sum across pools",action='store_true')
+parser.add_argument('database',help='The name of a database file')
 
 args=parser.parse_args()
+
+conn = cut.usage_db_connect(args.database)
+curs = conn.cursor()
 
 ### projects
 usage_projects=set(cut.get_db_projects(curs))
