@@ -34,6 +34,8 @@ def parse_date(date_string):
 def parse_headers(header_rows):
     # first row contains start date and names of pools
     cells = header_rows[0].getchildren()
+    if cells[1].text_content() == '':
+        return '','',[]
     from_date = parse_date(cells[1].text_content().strip())
 
     # get list of compute pools
@@ -61,6 +63,9 @@ def extract_usage_data(source,source_type):
     
     from_date,to_date,pools = parse_headers(rows[0:3])
     
+    if from_date == '':
+        return '',[]
+
     alldata = []
     
     for row in rows[3:]:
@@ -90,7 +95,8 @@ def get_all_usage_data(sourceURI):
         print "Adding usage data from mbox file " + source.path
         for msg in mailbox.mbox(source.path):
             date, alldata = extract_usage_data(msg,source.scheme)
-            usage_data[date] = alldata
+            if date != '':
+                usage_data[date] = alldata
     elif source.scheme == 'file':
         print "Adding usage data from local HTML file " + source.path
         date,alldata = extract_usage_data(source.path,'html_file')
@@ -116,7 +122,7 @@ def update_db_pools(curs,alldata):
     for pool in alldata[0]['usage'].keys():
         if pool not in db_pools:
             print "\tAdding new pool: " + pool
-            curs.execute('ALTER TABLE usage ADD COLUMN ' + pool + ' int')
+            curs.execute('ALTER TABLE usage ADD COLUMN ' + pool + ' int DEFAULT 0')
     conn.commit()
 
 def find_or_add_user(conn,user,group):
