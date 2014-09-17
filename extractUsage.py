@@ -41,6 +41,8 @@ if args.sum:
 
 project_data = {}
 
+fig = plt.figure()
+
 for project in usage_projects:
     print project
     curs.execute('select enddate,' + col_query + ' from usage where userid in (select rowid from users where project=?) group by enddate', (project,))
@@ -57,4 +59,5 @@ for project in usage_projects:
 #print project_data
 plt.legend(loc='upper left')
 plt.ylabel('cpu-hours per day')
+fig.autofmt_xdate()
 plt.show()
