@@ -7,6 +7,7 @@ import chtc_usage_tools as cut
 import matplotlib.pyplot as plt
 import matplotlib.dates as mpld
 import matplotlib as mpl
+from numpy import array
 
 mpl.rcParams['axes.color_cycle'] = ['r', 'k', 'c']
 
@@ -32,6 +33,8 @@ usage_pools=cut.get_db_pools(curs)
 if args.pool:
     usage_pools=set(args.pool).intersection(usage_pools)
 
+usage_pools = list(usage_pools)
+
 date_fmt_list= {'day':"%Y-%m-%d", 'month':"%Y-%m", 'year':"%Y"}
 sql_groupby_name = 'month'
 if args.span:
@@ -45,25 +48,28 @@ col_query = ','.join(sum_usage_pools)
 
 # sum over all pools
 if args.sum:
-    col_query  += ',(' + '+'.join(sum_usage_pools) + ')'
+    col_query  = '(' + '+'.join(sum_usage_pools) + ')'
+    usage_pools = ["total"]
 
 project_data = {}
 
 fig = plt.figure()
 
 for project in usage_projects:
-    print project
     sql_cmd = 'select strftime("' + date_fmt + '",enddate) as ' + sql_groupby_name + ',' + col_query + ' from usage where ' + 'userid in (select rowid from users where project=?) group by ' + sql_groupby_name 
     curs.execute(sql_cmd, (project,))
     project_data[project] = {'dates':[], 'usage':[]}
 
     rows = curs.fetchall()
-
     for row in rows:
         project_data[project]['dates'].append(datetime.datetime.strptime(row[0],date_fmt))
-        project_data[project]['usage'].append(row[1:])
-    if (max(project_data[project]['usage']) > 0):
-        plt.plot_date(mpld.date2num(project_data[project]['dates']),map(lambda x: x[-1], project_data[project]['usage']),'-',xdate=True,label=project)
+        project_data[project]['usage'].append(list(row[1:]))
+    pool_idx = 0
+    for temp in zip(*project_data[project]['usage']):
+        if (max(temp) > 0):
+            plt.plot_date(mpld.date2num(project_data[project]['dates']),array(temp),'-',xdate=True,label=project + " " + usage_pools[pool_idx])
+        pool_idx += 1
+        pool_idx = pool_idx % len(usage_pools)
 
 #print project_data
 plt.legend(loc='upper left')
