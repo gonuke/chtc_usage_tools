@@ -10,6 +10,7 @@ import lxml.html
 import chtc_usage_tools as cut
 
 def check_usage_tables(curs):
+    '''Create the necessary DB tables if they don't already exist'''
     curs.execute('CREATE TABLE IF NOT EXISTS users ( username varchar(255), project varchar(255))')
     curs.execute('CREATE TABLE IF NOT EXISTS usage ( userid int, enddate datetime)')
 
@@ -32,6 +33,7 @@ def parse_date(date_string):
     return datetime.date(date[0],date[1],date[2])
 
 def parse_headers(header_rows):
+
     # first row contains start date and names of pools
     cells = header_rows[0].getchildren()
     if cells[1].text_content() == '':
@@ -40,8 +42,9 @@ def parse_headers(header_rows):
 
     # get list of compute pools
     pools = []
-    for cell in cells[2:-2]:
-        pools.append(cell.text_content().strip().lower())
+    for cell in cells[2:]:
+        pool_name = cell.text_content().strip().lower()
+        pools.append(pool_name)
 
     # second row contains end date
     cells = header_rows[1].getchildren()
@@ -51,18 +54,30 @@ def parse_headers(header_rows):
 
 def extract_usage_data(source,source_type):
     """Get all the usage data from the table with id='chtc_usage_by_user' from url"""
-#    print source, source_type
+
     if source_type == 'html_file':
         html_tree = lxml.html.parse(source)
     elif source_type == 'mbox':
         msg_html = source.get_payload()[0].as_string()
+        # eliminate rogue strings that prevent HTML parsing
+        msg_html = msg_html.replace("!\r\n ","")
         html_start = msg_html.find('<html>')
         html_tree = lxml.html.fromstring(msg_html[html_start:])
 
     rows = get_table(html_tree,'chtc_usage_by_user')
     
     from_date,to_date,pools = parse_headers(rows[0:3])
-    
+
+    # complex logic to find column with project name
+    # This is kind of messy
+    project_idx = pools.index("project")
+    if project_idx == 0:
+        project_idx = 2
+    elif project_idx == len(pools)-1:
+        project_idx = (len(pools)-1)*2+2
+    else:
+        print "error"
+
     if from_date == '':
         return '',[]
 
@@ -72,10 +87,18 @@ def extract_usage_data(source,source_type):
         datarow = {}
         cells = row.getchildren()
         datarow['user'] = cells[1].text_content().strip()
-        datarow['group'] = cells[-1].text_content().strip()
+        datarow['group'] = cells[project_idx].text_content().strip()
         datarow['usage'] = {}
-        for pool, cell in zip(pools,cells[2:-4:2]):  # skip percent data - we can recalculate
-            datarow['usage'][pool] = int(''.join(cell.text_content().strip().split(',')))
+        cell_idx = 2
+        for pool in pools:
+            if pool == "project":
+                cell_idx += 1
+                continue
+
+            if pool != "total":
+                datarow['usage'][pool] = int(''.join(cells[cell_idx].text_content().strip().split(',')))
+            cell_idx += 2
+    
         alldata.append(datarow)
     
     return to_date,alldata
@@ -115,7 +138,7 @@ def get_db_pools(curs):
     return map(lambda x: x[0], cursor.description)
 
 def update_db_pools(curs,alldata):
-    # get all compute pools already in db    
+    '''get all compute pools already in db'''
     db_pools = get_db_pools(curs)
         
     # search for pools in db and add missing ones
