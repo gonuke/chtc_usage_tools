@@ -10,9 +10,21 @@ Parse the daily CHTC usage by users table and store in a database:
 
 **Syntax**
 
-`parseUsage.py source database`
+```
+usage: parseUsage.py [-h] source database
 
-`source`: a URI that points to the source of the usage data, for example:
+A tool to place data into the usage db
+
+positional arguments:
+  source      A URI to a source of data. Must be one of html,ftp,file for a
+              simple HTML file, or mbox for a mailbox of usage emails.
+  database    An sqlite3 database file
+
+optional arguments:
+  -h, --help  show this help message and exit
+```
+
+**URI examples:**
 
 * `mbox:local_file.mbox` is a local file in the mbox format, potentially with
   many daily email messages
