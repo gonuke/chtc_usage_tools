@@ -13,12 +13,16 @@ Parse the daily CHTC usage by users table and store in a database:
 parseUsage.py source database
 
 source:   a URI that points to the source of the usage data, for example:
-    * mbox:local_file.mbox   is a local file in the mbox format, potentially with many daily email
-      messages
-  * file:local_file.html   is a local file containing a single set of daily usage data perhaps saved from the website
-  * http://server.wisc.edu/usage_data.html is a remote file containing a single set of daily usage data
+
+* `mbox:local_file.mbox` is a local file in the mbox format, potentially with
+  many daily email messages
+* `file:local_file.html` is a local file containing a single set of daily usage
+  data perhaps saved from the website
+* `http://server.wisc.edu/usage_data.html` is a remote file containing a single set of daily usage data
     
 database: an sqlite database file
+
+**Comments**
 
 From each daily report, the list of individual user data is parsed and stored in two tables of an SQLite database:
 
