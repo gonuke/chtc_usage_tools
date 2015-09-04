@@ -1,15 +1,12 @@
-CHTC Usage Tools
-=================
+# CHTC Usage Tools
 
 A collection of tools to parse, store and visualize usage on CHTC resources.
 
-parseUsage.py
--------------
+## parseUsage.py
 
 Parse the daily CHTC usage by users table and store in a database:
 
-Syntax
-++++++
+### Syntax
 
 ```
 usage: parseUsage.py [-h] source database
@@ -25,8 +22,7 @@ optional arguments:
   -h, --help  show this help message and exit
 ```
 
-URI examples:
-+++++++++++++
+### URI examples:
 
 * `mbox:local_file.mbox` is a local file in the mbox format, potentially with
   many daily email messages
@@ -36,7 +32,7 @@ URI examples:
     
 `database`: an sqlite database file
 
-**Comments**
+### Comments
 
 From each daily report, the list of individual user data is parsed and stored in two tables of an SQLite database:
 
@@ -57,12 +53,11 @@ This script can read the tables from either a remote location (HTTP or FTP), a l
 For each date, the database is first checked for pre-existing data.  New data will NOT overwrite previous data.  No tools currently exist to replace old data with new data, other than direct SQL manipulation.
 
 
-extractUsage.py
----------------
+## extractUsage.py
 
 Extract and plot some standard views of data from a usage database.
 
-**Syntax**
+### Syntax
 
 ```
 usage: extractUsage.py [-h] [--project [PROJECT [PROJECT ...]]]
@@ -87,5 +82,4 @@ optional arguments:
                         Time span across which to sum data
 ```
 
-Comments
-++++++++
+### Comments
