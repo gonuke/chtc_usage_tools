@@ -8,7 +8,8 @@ parseUsage.py
 
 Parse the daily CHTC usage by users table and store in a database:
 
-**Syntax**
+Syntax
+++++++
 
 ```
 usage: parseUsage.py [-h] source database
@@ -24,7 +25,8 @@ optional arguments:
   -h, --help  show this help message and exit
 ```
 
-**URI examples:**
+URI examples:
++++++++++++++
 
 * `mbox:local_file.mbox` is a local file in the mbox format, potentially with
   many daily email messages
@@ -84,3 +86,6 @@ optional arguments:
   --span {day,month,year}
                         Time span across which to sum data
 ```
+
+Comments
+++++++++
