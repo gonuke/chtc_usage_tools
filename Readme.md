@@ -83,3 +83,25 @@ optional arguments:
 ```
 
 ### Comments
+
+By default, a plot will be generated that contains a line of monthly usage for every project on every compute pool for which that project has performed computing.  This is obviously an unwieldy amount of information for a single plot.
+
+To limit to a narrow set of projects provide a space-separated list as
+arguments to the `--project` CLI argument.
+
+To limit to a narrow set of compute pools, provide a space-separated list as
+arguments to the `--pool` CLI argument.
+
+Instead of the default monthly data, you can switch to daily or annual data with the `--span`` CLI argument.
+
+To see the total computing by a project (or set of projects) add the `--sum` option.
+
+### Example
+
+```extractUsage.py usage.db --project EngrPhys_Wilson --pool chtc slurm```
+
+This will produce a plot with 2 lines showing the monthly usage of the `EngrPhys_Wilson` project on each of the two compute pools (assuming that there is some usage on each pool).
+
+```extractUsage.py usage.db --project EngrPhys_Wilson MatSci_Morgan -s```
+
+This will produce a plot with 2 lines showing the monthly usage of the two projects summed over all compute pools.
